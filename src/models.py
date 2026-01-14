@@ -1,102 +1,195 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Boolean
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import relationship
 from typing import List
-
+from sqlalchemy import ForeignKey
 
 db = SQLAlchemy()
 
 class User(db.Model):
-    __tablename__ = "user"
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(String(16), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
+    username: Mapped[str] = mapped_column(nullable=False)
 
-    user_posts: Mapped[List["Post"]] = relationship(back_populates="user")
-    user_posts: Mapped[List["Interactions"]] = relationship(back_populates="user")
-    user_posts: Mapped[List["Messages"]] = relationship(back_populates="user")
-    user_posts: Mapped[List["Follows"]] = relationship(back_populates="user")
+    favorites_character: Mapped[List["Favorites_character"]] = relationship(back_populates="user")
 
     def serialize(self):
         return {
             "id": self.id,
-            "username": self.username,
             "email": self.email,
-            "is_active": self.is_active
+            "username": self.username
+            # do not serialize the password, its a security breach
+        }
+    
+class Characters(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)
+    imageLink: Mapped[str] = mapped_column(nullable=False)
+
+    favorites_character: Mapped[List["Favorites_character"]] = relationship(back_populates="characters")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "imageLink": self.imageLink
+            # do not serialize the password, its a security breach
+        }
+    
+class Planets(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)
+    imageLink: Mapped[str] = mapped_column(nullable=False)
+
+    favorites_planets: Mapped[List["Favorites_planets"]] = relationship(back_populates="planets")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "imageLink": self.imageLink
             # do not serialize the password, its a security breach
         }
 
-class Post(db.Model):
-    __tablename__ = "post"
+class Films(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    post_text: Mapped[str] = mapped_column(String(300), nullable=True)
-    img_link: Mapped[str] = mapped_column(String(200), nullable=False)
-    post_link: Mapped[str] = mapped_column(String(200), nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)
+    imageLink: Mapped[str] = mapped_column(nullable=False)
 
-    user: Mapped["User"] = relationship(back_populates="post")
-    post_id: Mapped[List["Interactions"]] = relationship(back_populates="post")
+    favorites_films: Mapped[List["Favorites_films"]] = relationship(back_populates="films")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "imageLink": self.imageLink
+            # do not serialize the password, its a security breach
+        }
+    
+class Vehicles(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)
+    imageLink: Mapped[str] = mapped_column(nullable=False)
+
+    favorites_vehicles: Mapped[List["Favorites_vehicles"]] = relationship(back_populates="vehicles")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "imageLink": self.imageLink
+            # do not serialize the password, its a security breach
+        }
+    
+class Species(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)
+    imageLink: Mapped[str] = mapped_column(nullable=False)
+
+    favorites_species: Mapped[List["Favorites_species"]] = relationship(back_populates="species")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "imageLink": self.imageLink
+            # do not serialize the password, its a security breach
+        }
+    
+class Favorites_character(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    character_id: Mapped[int] = mapped_column(ForeignKey("characters.id"))
+
+    user: Mapped["User"] = relationship(back_populates="favorites_character")
+    characters: Mapped["Characters"] = relationship(back_populates="favorites_character")
 
     def serialize(self):
         return {
             "id": self.id,
             "user_id": self.user_id,
-            "post_text": self.post_text,
-            "img_link": self.img_link,
-            "post_link": self.post_link
-        }
-    
-class Interactions(db.Model):
-    __tablename_ = "interactions"
+            "character_id": self.character_id,
+            # do not serialize the password, its a security breach
+        }  
+
+class Favorites_planets(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    like: Mapped[bool] = mapped_column(Boolean(), nullable=False)
-    comment: Mapped[str] = mapped_column(String(200), nullable=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    post_id: Mapped[int] =mapped_column(ForeignKey("post.id"))
+    planets_id: Mapped[int] = mapped_column(ForeignKey("planets.id"))
 
-    user: Mapped["User"] = relationship(back_populates="interactions")
-    post: Mapped["Post"] = relationship(back_populates="interactions")
-
-    def serialize(self):
-        return {
-            "id":self.id,
-            "post_id": self.post_id,
-            "user_id": self.user_id,
-            "like": self.like,
-            "comment": self.comment
-        }
-
-class Messages(db.Model):
-    __tablename__ = "messages"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    message: Mapped[str] = mapped_column(String(200), nullable=False)
-    sender_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    receiver_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-
-    user: Mapped["User"] = relationship(back_populates="messages")
+    user: Mapped["User"] = relationship(back_populates="favorites_planets")
+    planets: Mapped["Planets"] = relationship(back_populates="favorites_planets")
 
     def serialize(self):
         return {
             "id": self.id,
-            "message": self.message,
-            "sender_id": self.sender_id,
-            "reciever_id": self.receiver_id
+            "user_id": self.user_id,
+            "planets_id": self.planets_id,
+            # do not serialize the password, its a security breach
         }
     
-class Follows(db.Model):
-    __tablename__ = "follows"
+class Favorites_films(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    followed_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    follower_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
-    user: Mapped["User"] = relationship(back_populates="follows")
+
+    #Emparentar a User.
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    films_id: Mapped[int] = mapped_column(ForeignKey("films.id"))
+
+    user: Mapped["User"] = relationship(back_populates="favorites_films")
+    films: Mapped["Films"] = relationship(back_populates="favorites_films")
 
 
     def serialize(self):
         return {
             "id": self.id,
-            "followed_id": self.followed_id,
-            "follower_id": self.follower_id
+            "name": self.name,
+            "description": self.description,
+            "imageLink": self.imageLink
+            # do not serialize the password, its a security breach
+        }
+    
+class Favorites_vehicles(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    vehicles_id: Mapped[int] = mapped_column(ForeignKey("vehicles.id"))
+
+    user: Mapped["User"] = relationship(back_populates="favorites_vehicles")
+    vehicles: Mapped["Vehicles"] = relationship(back_populates="favorites_vehicles")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "vehicles_id": self.vehicles_id,
+            # do not serialize the password, its a security breach
+        }
+    
+class Favorites_species(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    species_id: Mapped[int] = mapped_column(ForeignKey("species.id"))
+
+    user: Mapped["User"] = relationship(back_populates="favorites_species")
+    species: Mapped["Vehicles"] = relationship(back_populates="favorites_species")
+
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "species_id": self.species_id,
+            # do not serialize the password, its a security breach
         }
