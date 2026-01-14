@@ -15,9 +15,9 @@ class User(db.Model):
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
     user_posts: Mapped[List["Post"]] = relationship(back_populates="user")
-    user_posts: Mapped[List["Interactions"]] = relationship(back_populates="user")
-    user_posts: Mapped[List["Messages"]] = relationship(back_populates="user")
-    user_posts: Mapped[List["Follows"]] = relationship(back_populates="user")
+    user_interactions: Mapped[List["Interactions"]] = relationship(back_populates="user")
+    user_messages: Mapped[List["Messages"]] = relationship(back_populates="user")
+    user_follows: Mapped[List["Follows"]] = relationship(back_populates="user")
 
     def serialize(self):
         return {
@@ -36,7 +36,7 @@ class Post(db.Model):
     post_link: Mapped[str] = mapped_column(String(200), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
-    user: Mapped["User"] = relationship(back_populates="post")
+    user: Mapped["User"] = relationship(back_populates="user_posts")
     post_id: Mapped[List["Interactions"]] = relationship(back_populates="post")
 
     def serialize(self):
@@ -56,8 +56,8 @@ class Interactions(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     post_id: Mapped[int] =mapped_column(ForeignKey("post.id"))
 
-    user: Mapped["User"] = relationship(back_populates="interactions")
-    post: Mapped["Post"] = relationship(back_populates="interactions")
+    user: Mapped["User"] = relationship(back_populates="user_interactions")
+    post: Mapped["Post"] = relationship(back_populates="post_id")
 
     def serialize(self):
         return {
@@ -75,7 +75,7 @@ class Messages(db.Model):
     sender_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     receiver_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
-    user: Mapped["User"] = relationship(back_populates="messages")
+    user: Mapped["User"] = relationship(back_populates="user_messages")
 
     def serialize(self):
         return {
@@ -91,7 +91,7 @@ class Follows(db.Model):
     followed_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     follower_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
-    user: Mapped["User"] = relationship(back_populates="follows")
+    user: Mapped["User"] = relationship(back_populates="user_follows")
 
 
     def serialize(self):
